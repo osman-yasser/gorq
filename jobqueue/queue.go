@@ -2,6 +2,11 @@ package jobqueue
 
 import "context"
 
+const (
+	defaultBufferSize = 100
+	defaultWorker     = 1
+)
+
 type Queue struct {
 	jobs    chan Job
 	workers int
@@ -9,10 +14,33 @@ type Queue struct {
 	cancel  context.CancelFunc
 }
 
-func NewQueue(bufferSize int, workers int) *Queue {
-	return &Queue{
-		jobs:    make(chan Job, bufferSize),
-		workers: workers,
+type Option func(*Queue)
+
+func NewQueue(opts ...Option) *Queue {
+	q := &Queue{
+		workers: defaultWorker,
+	}
+
+	for _, opt := range opts {
+		opt(q)
+	}
+
+	if q.jobs == nil {
+		q.jobs = make(chan Job, defaultBufferSize)
+	}
+
+	return q
+}
+
+func QueueBufferSize(size int) Option {
+	return func(q *Queue) {
+		q.jobs = make(chan Job, size)
+	}
+}
+
+func QueueWorkers(num int) Option {
+	return func(q *Queue) {
+		q.workers = num
 	}
 }
 

@@ -29,7 +29,7 @@ func FailingJob(payload string) error {
 }
 
 func main() {
-	queue := jobqueue.NewQueue(10, 3)
+	queue := jobqueue.NewQueue(jobqueue.QueueBufferSize(10), jobqueue.QueueWorkers(3))
 
 	queue.Start()
 
