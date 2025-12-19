@@ -1,4 +1,4 @@
-package main
+package jobqueue
 
 type JobFunc func(payload string) error
 

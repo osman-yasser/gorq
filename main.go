@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"gorq/jobqueue"
 	"log"
 	"math/rand"
 	"time"
@@ -32,38 +33,38 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	queue := NewQueue(10)
+	queue := jobqueue.NewQueue(10)
 
 	for i := 1; i <= 3; i++ {
-		worker := NewWorker(i, queue)
+		worker := jobqueue.NewWorker(i, queue)
 		worker.Start(ctx)
 	}
 
 	log.Println("workers started")
 
 	queue.Push(
-		Job{
+		jobqueue.Job{
 			Name:       "send_mail",
 			Payload:    "osmanyasseradel77@gmail.com",
 			Execute:    SendEmailJob,
 			MaxRetries: 0,
 		})
 
-	queue.Push(Job{
+	queue.Push(jobqueue.Job{
 		Name:       "resize_image",
 		Payload:    "image1.png",
 		Execute:    ResizeImageJob,
 		MaxRetries: 3,
 	})
 
-	queue.Push(Job{
+	queue.Push(jobqueue.Job{
 		Name:       "send_main",
 		Payload:    "test@example.com",
 		Execute:    SendEmailJob,
 		MaxRetries: 0,
 	})
 
-	queue.Push(Job{
+	queue.Push(jobqueue.Job{
 		Name:       "test_failed",
 		Payload:    "test failed",
 		Execute:    FailingJob,
