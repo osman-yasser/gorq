@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"gorq/jobqueue"
 	"log"
@@ -30,19 +29,15 @@ func FailingJob(payload string) error {
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	queue := jobqueue.NewQueue(10, 3)
 
-	queue := jobqueue.NewQueue(10)
+	queue.Start()
 
-	for i := 1; i <= 3; i++ {
-		worker := jobqueue.NewWorker(i, queue)
-		worker.Start(ctx)
-	}
+	defer queue.Shutdown()
 
 	log.Println("workers started")
 
-	queue.Push(
+	queue.Enqueue(
 		jobqueue.Job{
 			Name:       "send_mail",
 			Payload:    "osmanyasseradel77@gmail.com",
@@ -50,21 +45,21 @@ func main() {
 			MaxRetries: 0,
 		})
 
-	queue.Push(jobqueue.Job{
+	queue.Enqueue(jobqueue.Job{
 		Name:       "resize_image",
 		Payload:    "image1.png",
 		Execute:    ResizeImageJob,
 		MaxRetries: 3,
 	})
 
-	queue.Push(jobqueue.Job{
+	queue.Enqueue(jobqueue.Job{
 		Name:       "send_main",
 		Payload:    "test@example.com",
 		Execute:    SendEmailJob,
 		MaxRetries: 0,
 	})
 
-	queue.Push(jobqueue.Job{
+	queue.Enqueue(jobqueue.Job{
 		Name:       "test_failed",
 		Payload:    "test failed",
 		Execute:    FailingJob,
